@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pulp Exposure Prediction Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&family=Merriweather:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a5276;
+            --primary-light: #2980b9;
+            --secondary: #148f77;
+            --background: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --text-light: #5d6d7e;
+            --border: #d5dbdb;
+            --low-risk: #27ae60;
+            --low-risk-bg: #d5f5e3;
+            --moderate-risk: #f39c12;
+            --moderate-risk-bg: #fef9e7;
+            --high-risk: #e74c3c;
+            --high-risk-bg: #fdedec;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1), 0 6px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            min-height: 100vh;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title .icon {
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+
+        .label-hint {
+            font-weight: 400;
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+
+        input[type="number"],
+        select {
+            padding: 12px 14px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            background: var(--card-bg);
+        }
+
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.15);
+        }
+
+        input[type="number"] {
+            width: 100%;
+        }
+
+        select {
+            width: 100%;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235d6d7e' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 40px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(26, 82, 118, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26, 82, 118, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--background);
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        /* Results Section */
+        #results {
+            display: none;
+        }
+
+        #results.show {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .probability-display {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .probability-label {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .risk-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-top: 16px;
+        }
+
+        .risk-badge.low {
+            background: var(--low-risk-bg);
+            color: var(--low-risk);
+            border: 2px solid var(--low-risk);
+        }
+
+        .risk-badge.moderate {
+            background: var(--moderate-risk-bg);
+            color: var(--moderate-risk);
+            border: 2px solid var(--moderate-risk);
+        }
+
+        .risk-badge.high {
+            background: var(--high-risk-bg);
+            color: var(--high-risk);
+            border: 2px solid var(--high-risk);
+        }
+
+        .risk-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .risk-indicator.low { background: var(--low-risk); }
+        .risk-indicator.moderate { background: var(--moderate-risk); }
+        .risk-indicator.high { background: var(--high-risk); }
+
+        /* Progress Bar */
+        .progress-container {
+            margin: 24px 0;
+        }
+
+        .progress-bar {
+            height: 16px;
+            background: linear-gradient(to right, 
+                var(--low-risk) 0%, 
+                var(--low-risk) 30%, 
+                var(--moderate-risk) 30%, 
+                var(--moderate-risk) 70%, 
+                var(--high-risk) 70%, 
+                var(--high-risk) 100%);
+            border-radius: 8px;
+            position: relative;
+            overflow: visible;
+        }
+
+        .progress-marker {
+            position: absolute;
+            top: -6px;
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            border: 4px solid white;
+            border-radius: 50%;
+            box-shadow: var(--shadow);
+            transform: translateX(-50%);
+            transition: left 0.5s ease;
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        /* Recommendations */
+        .recommendations {
+            margin-top: 24px;
+        }
+
+        .recommendation-card {
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+        }
+
+        .recommendation-card.low {
+            background: var(--low-risk-bg);
+            border-left: 4px solid var(--low-risk);
+        }
+
+        .recommendation-card.moderate {
+            background: var(--moderate-risk-bg);
+            border-left: 4px solid var(--moderate-risk);
+        }
+
+        .recommendation-card.high {
+            background: var(--high-risk-bg);
+            border-left: 4px solid var(--high-risk);
+        }
+
+        .recommendation-title {
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recommendation-card.low .recommendation-title { color: var(--low-risk); }
+        .recommendation-card.moderate .recommendation-title { color: var(--moderate-risk); }
+        .recommendation-card.high .recommendation-title { color: var(--high-risk); }
+
+        .recommendation-list {
+            list-style: none;
+        }
+
+        .recommendation-list li {
+            padding: 6px 0;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .recommendation-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .recommendation-card.low .recommendation-list li::before { color: var(--low-risk); }
+        .recommendation-card.moderate .recommendation-list li::before { color: var(--moderate-risk); }
+        .recommendation-card.high .recommendation-list li::before { color: var(--high-risk); }
+
+        /* Input Summary */
+        .input-summary {
+            background: var(--background);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .input-summary-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+        }
+
+        .input-item {
+            font-size: 0.9rem;
+        }
+
+        .input-item strong {
+            color: var(--text);
+        }
+
+        .input-item span {
+            color: var(--text-light);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .disclaimer {
+            background: #fff8e1;
+            border: 1px solid #ffcc02;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .disclaimer-title {
+            font-weight: 700;
+            color: #f57c00;
+            margin-bottom: 6px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 16px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .probability-display {
+                font-size: 2.8rem;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+            }
+
+            .btn-group {
+                display: none;
+            }
+
+            .card {
+                box-shadow: none;
+                border: 1px solid var(--border);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pulp Exposure Prediction Calculator</h1>
+            <p class="subtitle">Clinical Decision Support Tool for Vital Pulp Therapy Planning</p>
+        </header>
+
+        <!-- Input Form -->
+        <div class="card">
+            <div class="card-title">
+                <span class="icon">1</span>
+                Patient and Clinical Information
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="age">Age at Treatment <span class="label-hint">(years)</span></label>
+                    <input type="number" id="age" min="6" max="18" step="0.1" placeholder="e.g., 10.5" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="sex">Sex</label>
+                    <select id="sex" required>
+                        <option value="">-- Select --</option>
+                        <option value="0">Female</option>
+                        <option value="1">Male</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="arch">Dental Arch</label>
+                    <select id="arch" required>
+                        <option value="">-- Select --</option>
+                        <option value="0">Maxillary</option>
+                        <option value="1">Mandibular</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="site">Carious Site</label>
+                    <select id="site" required>
+                        <option value="">-- Select --</option>
+                        <option value="0">Occlusal or smooth surface only</option>
+                        <option value="1">Proximal surface involved</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="diagnosis">Pulpal Diagnosis</label>
+                    <select id="diagnosis" required>
+                        <option value="">-- Select --</option>
+                        <option value="normal">Normal pulp</option>
+                        <option value="reversible">Reversible pulpitis</option>
+                        <option value="irreversible">Irreversible pulpitis</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="depth">Radiographic Caries Depth</label>
+                    <select id="depth" required>
+                        <option value="">-- Select --</option>
+                        <option value="0">RC5 (inner third of dentin)</option>
+                        <option value="1">RC6 (approaching/contacting pulp)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="root">Root Development</label>
+                    <select id="root" required>
+                        <option value="">-- Select --</option>
+                        <option value="0">Complete (closed apex)</option>
+                        <option value="1">Incomplete (open apex)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="lesion">Early Periapical Changes</label>
+                    <select id="lesion" required>
+                        <option value="">-- Select --</option>
+                        <option value="0">Absent</option>
+                        <option value="1">Present</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" onclick="calculate()">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-2v-4H8v-2h4V7h2v4h4v2h-4v4z"/></svg>
+                    Calculate Risk
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+                    Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="card">
+            <div class="card-title">
+                <span class="icon">2</span>
+                Prediction Results
+            </div>
+
+            <div class="result-header">
+                <div class="probability-display" id="probabilityValue">--</div>
+                <div class="probability-label">Predicted Probability of Pulp Exposure</div>
+                <div class="risk-badge" id="riskBadge">
+                    <span class="risk-indicator"></span>
+                    <span id="riskText">--</span>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-marker" id="progressMarker"></div>
+                </div>
+                <div class="progress-labels">
+                    <span>0%</span>
+                    <span>30% (Low/Moderate)</span>
+                    <span>70% (Moderate/High)</span>
+                    <span>100%</span>
+                </div>
+            </div>
+
+            <div class="recommendations" id="recommendations">
+                <!-- Recommendations will be inserted here -->
+            </div>
+
+            <div class="input-summary">
+                <div class="input-summary-title">Input Summary</div>
+                <div class="input-summary-grid" id="inputSummary">
+                    <!-- Summary will be inserted here -->
+                </div>
+            </div>
+
+            <div class="disclaimer">
+                <div class="disclaimer-title">⚠️ Clinical Disclaimer</div>
+                <p>This calculator is a decision-support tool for preoperative planning and communication — it does not prescribe treatment selection. The predicted probability should be used to guide clinician preparedness, material preparation, and informed consent discussions. The extent of carious tissue removal, choice of restorative material, and type of vital pulp therapy remain dictated by intraoperative findings, pulp tissue status, and established operative principles. Regardless of predicted risk, all treated teeth require standardised long-term clinical and radiographic follow-up.</p>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>Pulp Exposure Prediction Model</strong></p>
+            <p>Developed at Faculty of Dentistry, Chiang Mai University, Thailand</p>
+            <p style="margin-top: 8px;">Reference: Manmontri C, et al. Clinical Prediction Model for Pulp Exposure during Non-Selective Caries Removal in Pediatric Permanent Molars: Development and Validation.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Recalibrated model coefficients
+        const COEFFICIENTS = {
+            intercept: -2.5944892,
+            age: 0.09063474,
+            male: 0.31314006,
+            mandible: 0.32108166,
+            proximal: 0.02026522,
+            reversible: 0.77928763,
+            irreversible: 2.6800645,
+            rc6: 1.1580522,
+            incomplete: 0.31937946,
+            lesion: 0.22027408
+        };
+
+        function calculate() {
+            // Get input values
+            const age = parseFloat(document.getElementById('age').value);
+            const sex = document.getElementById('sex').value;
+            const arch = document.getElementById('arch').value;
+            const site = document.getElementById('site').value;
+            const diagnosis = document.getElementById('diagnosis').value;
+            const depth = document.getElementById('depth').value;
+            const root = document.getElementById('root').value;
+            const lesion = document.getElementById('lesion').value;
+
+            // Validate inputs
+            if (!age || sex === '' || arch === '' || site === '' || 
+                diagnosis === '' || depth === '' || root === '' || lesion === '') {
+                alert('Please complete all fields before calculating.');
+                return;
+            }
+
+            if (age < 6 || age > 18) {
+                alert('Age must be between 6 and 18 years.');
+                return;
+            }
+
+            // Calculate linear predictor
+            let lp = COEFFICIENTS.intercept;
+            lp += COEFFICIENTS.age * age;
+            lp += COEFFICIENTS.male * parseInt(sex);
+            lp += COEFFICIENTS.mandible * parseInt(arch);
+            lp += COEFFICIENTS.proximal * parseInt(site);
+            
+            if (diagnosis === 'reversible') {
+                lp += COEFFICIENTS.reversible;
+            } else if (diagnosis === 'irreversible') {
+                lp += COEFFICIENTS.irreversible;
+            }
+            
+            lp += COEFFICIENTS.rc6 * parseInt(depth);
+            lp += COEFFICIENTS.incomplete * parseInt(root);
+            lp += COEFFICIENTS.lesion * parseInt(lesion);
+
+            // Calculate probability
+            const probability = Math.exp(lp) / (1 + Math.exp(lp));
+            const probabilityPercent = (probability * 100).toFixed(1);
+
+            // Determine risk category
+            let riskCategory, riskClass;
+            if (probability < 0.30) {
+                riskCategory = 'Low Risk';
+                riskClass = 'low';
+            } else if (probability <= 0.70) {
+                riskCategory = 'Moderate Risk';
+                riskClass = 'moderate';
+            } else {
+                riskCategory = 'High Risk';
+                riskClass = 'high';
+            }
+
+            // Update display
+            document.getElementById('probabilityValue').textContent = probabilityPercent + '%';
+            
+            const riskBadge = document.getElementById('riskBadge');
+            riskBadge.className = 'risk-badge ' + riskClass;
+            riskBadge.querySelector('.risk-indicator').className = 'risk-indicator ' + riskClass;
+            document.getElementById('riskText').textContent = riskCategory;
+
+            // Update progress marker
+            const marker = document.getElementById('progressMarker');
+            marker.style.left = probabilityPercent + '%';
+
+            // Display recommendations
+            displayRecommendations(riskClass);
+
+            // Display input summary
+            displayInputSummary(age, sex, arch, site, diagnosis, depth, root, lesion);
+
+            // Show results
+            document.getElementById('results').classList.add('show');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function displayRecommendations(riskClass) {
+            const container = document.getElementById('recommendations');
+            let html = '';
+
+            if (riskClass === 'low') {
+                html = `
+                    <div class="recommendation-card low">
+                        <div class="recommendation-title">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                            Low Risk (<30%) — Clinical Recommendations
+                        </div>
+                        <ul class="recommendation-list">
+                            <li>Pulp exposure is unlikely — proceed with confidence preparing for pulp protection</li>
+                            <li>Prepare protective liner or calcium silicate-based material (e.g., Biodentine, MTA) for pulp protection</li>
+                            <li>Routine informed consent for restorative procedure</li>
+                            <li>Standard appointment time allocation</li>
+                        </ul>
+                    </div>
+                `;
+            } else if (riskClass === 'moderate') {
+                html = `
+                    <div class="recommendation-card moderate">
+                        <div class="recommendation-title">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                            Moderate Risk (30–70%) — Clinical Recommendations
+                        </div>
+                        <ul class="recommendation-list">
+                            <li>Pulp exposure is possible — prepare for both outcomes (protective liner if unexposed, or direct pulp capping/pulpotomy if exposed)</li>
+                            <li>Ensure rubber dam isolation is in place before caries removal</li>
+                            <li>Prepare vital pulp therapy materials in advance:
+                                <ul style="margin-left: 20px; margin-top: 6px;">
+                                    <li>Calcium silicate-based cement (e.g., Biodentine, MTA)</li>
+                                    <li>Haemostatic agents (saline or 2.5% sodium hypochlorite)</li>
+                                </ul>
+                            </li>
+                            <li>Informed consent should address both possibilities — pulp protection and vital pulp therapy (direct pulp capping or pulpotomy)</li>
+                            <li>Allocate additional appointment time for potential VPT procedure</li>
+                        </ul>
+                    </div>
+                `;
+            } else {
+                html = `
+                    <div class="recommendation-card high">
+                        <div class="recommendation-title">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                            High Risk (>70%) — Clinical Recommendations
+                        </div>
+                        <ul class="recommendation-list">
+                            <li><strong>Anticipate pulp exposure</strong> — prepare for vital pulp therapy before initiating caries removal</li>
+                            <li>Essential material and equipment preparation:
+                                <ul style="margin-left: 20px; margin-top: 6px;">
+                                    <li>Rubber dam isolation (mandatory)</li>
+                                    <li>Calcium silicate-based cement (e.g., Biodentine, MTA)</li>
+                                    <li>Haemostatic agents (saline or 2.5% sodium hypochlorite)</li>
+                                    <li>High-speed diamond bur for pulpotomy if needed</li>
+                                </ul>
+                            </li>
+                            <li>Informed consent should explicitly address:
+                                <ul style="margin-left: 20px; margin-top: 6px;">
+                                    <li>High likelihood of pulp exposure during caries removal</li>
+                                    <li>Anticipated need for vital pulp therapy (direct pulp capping or partial/coronal pulpotomy)</li>
+                                    <li>Postoperative expectations and need for clinical and radiographic follow-up</li>
+                                </ul>
+                            </li>
+                            <li>Allocate extended chairside time for VPT procedure</li>
+                            <li>Contemporary VPT using calcium silicate-based materials reports success rates of approximately 80–95% over 1–3 years, including in teeth with signs of irreversible pulpitis</li>
+                        </ul>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function displayInputSummary(age, sex, arch, site, diagnosis, depth, root, lesion) {
+            const sexText = sex === '1' ? 'Male' : 'Female';
+            const archText = arch === '1' ? 'Mandibular' : 'Maxillary';
+            const siteText = site === '1' ? 'Proximal involved' : 'Occlusal/smooth only';
+            const diagnosisText = diagnosis.charAt(0).toUpperCase() + diagnosis.slice(1) + (diagnosis === 'normal' ? ' pulp' : ' pulpitis');
+            const depthText = depth === '1' ? 'RC6' : 'RC5';
+            const rootText = root === '1' ? 'Incomplete' : 'Complete';
+            const lesionText = lesion === '1' ? 'Present' : 'Absent';
+
+            const html = `
+                <div class="input-item"><span>Age:</span> <strong>${age} years</strong></div>
+                <div class="input-item"><span>Sex:</span> <strong>${sexText}</strong></div>
+                <div class="input-item"><span>Arch:</span> <strong>${archText}</strong></div>
+                <div class="input-item"><span>Site:</span> <strong>${siteText}</strong></div>
+                <div class="input-item"><span>Diagnosis:</span> <strong>${diagnosisText}</strong></div>
+                <div class="input-item"><span>Caries depth:</span> <strong>${depthText}</strong></div>
+                <div class="input-item"><span>Root:</span> <strong>${rootText}</strong></div>
+                <div class="input-item"><span>Periapical:</span> <strong>${lesionText}</strong></div>
+            `;
+
+            document.getElementById('inputSummary').innerHTML = html;
+        }
+
+        function resetForm() {
+            document.getElementById('age').value = '';
+            document.getElementById('sex').value = '';
+            document.getElementById('arch').value = '';
+            document.getElementById('site').value = '';
+            document.getElementById('diagnosis').value = '';
+            document.getElementById('depth').value = '';
+            document.getElementById('root').value = '';
+            document.getElementById('lesion').value = '';
+            document.getElementById('results').classList.remove('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Allow Enter key to trigger calculation
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculate();
+            }
+        });
+    </script>
+</body>
+</html>
